@@ -79,6 +79,19 @@
             color: #444;
             word-break: break-all;
         }
+        .download-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .download-link:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -99,7 +112,7 @@
     </div>
 
     <script>
-        function handleDownload() {
+        async function handleDownload() {
             const url = document.getElementById('urlInput').value.trim();
             const resultDiv = document.getElementById('result');
 
@@ -108,9 +121,26 @@
                 return;
             }
 
-            // Placeholder action: In a real implementation, you would send 
-            // this 'url' to your backend API or serverless function.
-            resultDiv.innerHTML = `<strong>Processing URL:</strong> ${url}`;
+            resultDiv.innerHTML = "Processing request...";
+
+            try {
+                // REPLACE THIS with your deployed Cloudflare Worker URL
+                const workerUrl = 'https://your-worker-subdomain.workers.dev/?url=' + encodeURIComponent(url);
+                
+                const response = await fetch(workerUrl);
+                const data = await response.json();
+
+                if (data.downloadUrl) {
+                    resultDiv.innerHTML = `
+                        <p><strong>Ready!</strong></p>
+                        <a class="download-link" href="${data.downloadUrl}" target="_blank">Download File</a>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<span style="color: red;">Could not fetch video. Check the link.</span>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span style="color: red;">An error occurred while connecting to the server.</span>`;
+            }
         }
     </script>
 
